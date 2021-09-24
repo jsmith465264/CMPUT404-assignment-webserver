@@ -36,7 +36,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
     
     def handle(self):
         self.data = self.request.recv(1024).strip().decode("utf-8") 
-        print("Got a request of: %s\n" % self.data)
         requestLine, headers = self.data.split("\r\n", 1)
         message = email.message_from_file(StringIO(headers))
         headers = dict(message.items())
@@ -45,7 +44,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             r = "HTTP/1.1 405 OK\nContent-Type: text/plain\nContent-Length: 0\r\n"
         else:
             r = self.getFile(path)
-        print(bytearray(r,'utf-8'))
+
         self.request.sendall(bytearray(r,'utf-8'))
         
     def getFile(self, requestPath):
@@ -95,17 +94,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
         content = open(path, "r").read()
         x = "HTTP/1.1 200 OK\nContent-Type: text/html; charset=iso-8859-1\nConnection: close\nContent-Length: 1000\r\n" + content
         direct, _ = path.rsplit("/", 1)
-        print("direct" + direct)
         for i in os.listdir(direct):
             try:
                 _ ,mimeType = i.split(".")
                 if mimeType == "css":
-                    print(i)
                     x = x.replace(
                         '<link rel="stylesheet" type="text/css" href="' + i + '">',
                         "<style>" +(open((direct+"/"+i), "r").read()) + "</style>"
                     )
-                    print(x)
             except:
                 pass
         return x
